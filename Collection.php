@@ -4,39 +4,42 @@ namespace App;
 
 class Collection
 {
-    private array $data;
+    private array $data = [];
 
-    public function __construct(array $data = [])
+    public function increment(Company $company)
     {
-        foreach ($data as $datum) {
-            $this->increment($datum);
+        $this->data []= $company;
+    }
+
+    public function getList (): array
+    {
+        return $this->data;
+    }
+
+    public function getLast(int $number = 30): array
+    {
+        return array_slice($this->data, -$number);
+    }
+
+    public function getCompanyName(string $name): Collection
+    {
+        $data = new Collection();
+
+        foreach ($this->data as $company) {
+            if ($company->getName() === $name) {
+                $data->increment($company);
+            }
         }
+        return $data;
     }
 
-    public function increment (Company $company): Company
+    public function getCompanyRegistrationCode(int $number): ?Company
     {
-        return $this->data []= $company;
-    }
-
-    public function getCompanyName (): array
-    {
-        $companies = [];
-
-        foreach ($this->data as $name) {
-            $companies []= $name->getName();
+        foreach ($this->data as $company) {
+            if ($company->getRegistrationCode() === $number) {
+                return $company;
+            }
         }
-        return $companies;
+        return null;
     }
-
-    public function getCompanyRegistrationCode(): array
-    {
-        $companies = [];
-
-        foreach ($this->data as $code) {
-            $companies []= $code->getRegistrationCode();
-        }
-        return $companies;
-    }
-
-
 }

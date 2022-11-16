@@ -1,32 +1,41 @@
 <?php
-
 require_once 'vendor/autoload.php';
-
-use App\Company;
 use App\Selection;
-use League\Csv\Reader;
-use League\Csv\Statement;
 
-$selection = Selection::createFromPath('register.csv');
+$companies = (new Selection('register.csv', ';'))->getData();
 
-$csv = Reader::createFromPath('register.csv');
-$csv->setDelimiter(';');
-$csv->setHeaderOffset(0);
-$header = $csv->getHeader();
+while(true)
+{
+    echo "[1] Show last 30 companies." . PHP_EOL;
+    echo "[2] Show company by registration code." . PHP_EOL;
+    echo "[3] Show registration code by company name." . PHP_EOL;
+    echo "[4] Exit." . PHP_EOL;
 
-if ($input_bom === Reader::BOM_UTF16_LE || $input_bom === Reader::BOM_UTF16_BE) {
-    $csv->addStreamFilter('https://data.gov.lv/dati/lv/dataset/uz/resource/25e80bf3-f107-4ab4-89ef-251b5b9374e9');
+    $selection = (int)readline("Select option You're looking for: ") . PHP_EOL;
+    switch ($selection){
+        case 1:
+            foreach ($companies->getLast() as $company) {
+                echo "Company name: {$company->getName()} | Registration Code: {$company->getRegistrationCode()}" . PHP_EOL;
+            }
+            break;
+        case 2:
+            $companyRegistrationCode = (int)readline("Enter a registration code: ");
+            $company = $companies->getCompanyRegistrationCode($companyRegistrationCode);
+
+            if ($company) {
+                echo "The company You're looking for is: {$company->getName()} = {$company->getRegistrationCode()}" . PHP_EOL;
+            } else {
+                echo "There is no company You're looking for :(" . PHP_EOL;
+            }
+            break;
+        case 3:
+            $companyName = readline("Enter company's name: ") . PHP_EOL;
+            $searchedCompanies = $companies->getCompanyName($companyName);
+            foreach ($searchedCompanies->getList() as $company) {
+                echo "{$company->getName()} = {$company->getRegistrationCode()}" . PHP_EOL;
+            }
+            break;
+        case 4:
+            exit;
+    }
 }
-
-$companies = new \App\Collection();
-echo implode(', ', $companies->getCompanyName());
-
-$stmt = Statement::create()
-    ->limit(25);
-$records = $stmt->process($csv);
-
-foreach ($records->getRecords() as $record) {
-    $companies []= new Company($record['name'], $record['regcode']);
-}
-
-var_dump($companies);
